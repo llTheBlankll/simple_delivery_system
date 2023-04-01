@@ -24,7 +24,6 @@ if (isset($_GET["search"])) {
 
 // * ADD
 if (isset($_POST["product_name"]) && isset($_POST["order_id"]) && isset($_POST["tracking_id"])) {
-    $tracking_id = $_POST["tracking_id"];
     $order_id = $_POST["order_id"];
     $product_name = $_POST["product_name"];
 
@@ -32,18 +31,17 @@ if (isset($_POST["product_name"]) && isset($_POST["order_id"]) && isset($_POST["
         die(header("Location: /dashboard/index.php?error=Parcel already exists"));
     }
 
-    if (empty($tracking_id)) {
-        die(header("Location: /dashboard/index.php?error=Tracking ID cannot be empty."));
-    } else if (empty($order_id)) {
+    if (empty($order_id)) {
         die(header("Location: /dashboard/index.php?error=Order ID cannot be empty."));
     } else if (empty($product_name)) {
         die(header("Location: /dashboard/index.php?error=Product Name cannot be empty."));
     }
 
     $con = getConnection();
-    $sql = "INSERT INTO parcel (product_name, order_id, tracking_id) VALUES (?, ?, ?)";
+    $sql = "INSERT INTO parcel (product_name, order_id) VALUES (?, ?)";
     $stmt = $con->prepare($sql);
-    $stmt->bind_param("sss", $product_name, $order_id, $tracking_id);
+    $stmt->bind_param("sss", $product_name, $order_id);
+
     if ($stmt->execute()) {
         header("Location: /dashboard/index.php?success=Product Name " . $product_name . " successfully added for delivery.");
     }
@@ -76,13 +74,10 @@ if (isset($_GET["delete_id"]) && !empty($_GET["delete_id"])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title> Dashboard | Parcel System </title>
     <!-- Compiled and minified CSS -->
-    <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/@materializecss/materialize@1.2.1/dist/css/materialize.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@materializecss/materialize@1.2.1/dist/css/materialize.min.css">
     <link rel="stylesheet" href="./css/main.css">
     <!-- Compiled and minified JavaScript -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js"
-        integrity="sha512-STof4xm1wgkfm7heWqFJVn58Hm3EtS31XFaagaa8VMReCXAkQnJZ+jEy8PCC/iT18dFy95WcExNHFTqLyp72eQ=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js" integrity="sha512-STof4xm1wgkfm7heWqFJVn58Hm3EtS31XFaagaa8VMReCXAkQnJZ+jEy8PCC/iT18dFy95WcExNHFTqLyp72eQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/@materializecss/materialize@1.2.1/dist/js/materialize.min.js"></script>
     <script src="./js/main.js"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -92,22 +87,22 @@ if (isset($_GET["delete_id"]) && !empty($_GET["delete_id"])) {
     <?php
 
     if ($delete_status == 1) {
-        ?>
+    ?>
         <div class="alert success">
             Parcel was successfully deleted!
         </div>
-        <?php
+    <?php
     } else if (isset($_GET["error"]) && !empty($_GET["error"])) {
-        ?>
-            <div class="alert danger">
+    ?>
+        <div class="alert danger">
             <?php echo htmlspecialchars($_GET["error"], ENT_QUOTES, "UTF-8"); ?>
-            </div>
+        </div>
     <?php
     } else if (isset($_GET["success"])) {
-        ?>
-                <div class="alert success">
+    ?>
+        <div class="alert success">
             <?php echo htmlspecialchars($_GET["success"], ENT_QUOTES, "UTF-8"); ?>
-                </div>
+        </div>
     <?php } ?>
     <div class="container">
         <div class="row">
@@ -121,10 +116,8 @@ if (isset($_GET["delete_id"]) && !empty($_GET["delete_id"])) {
                         </div>
                     </form>
                     <div class="input-field col s12 offset-m3 offset-s2 l7">
-                        <button class="btn waves-effect waves-light" type="submit" form="search_form"><i
-                                class="material-icons left">search</i>Search</button>
-                        <button type="submit" class="btn waves-effect waves-light green" form="add_delivery_form"><i
-                                class="material-icons left">add</i>Add Delivery</button>
+                        <button class="btn waves-effect waves-light" type="submit" form="search_form"><i class="material-icons left">search</i>Search</button>
+                        <button type="submit" class="btn waves-effect waves-light green" form="add_delivery_form"><i class="material-icons left">add</i>Add Delivery</button>
                     </div>
                 </div>
             </div>
@@ -134,13 +127,10 @@ if (isset($_GET["delete_id"]) && !empty($_GET["delete_id"])) {
                         <span class="card-title">Parcel Delivery</span>
                         <form action="" id="add_delivery_form" method="post">
                             <div class="row">
-                                <div class="col s12 l4 m6 input-field"><input type="text" name="product_name"
-                                        id="txt_productName"><label for="product_name">Product Name</label></input>
+                                <div class="col s12 l4 m6 input-field"><input type="text" name="product_name" id="txt_productName"><label for="product_name">Product Name</label></input>
                                 </div>
-                                <div class="col s12 l4 m6 input-field"><input type="text" name="order_id"
-                                        id="txt_orderId"><label for="order_id">Order ID</label></input></div>
-                                <div class="col s12 l4 m12 input-field"><input type="text" name="tracking_id"
-                                        id="txt_trackingId"><label for="tracking_id">Tracking ID</label></input></div>
+                                <div class="col s12 l4 m6 input-field"><input type="text" name="order_id" id="txt_orderId"><label for="order_id">Order ID</label></input></div>
+                                <div class="col s12 l4 m12 input-field"><input type="text" name="tracking_id" id="txt_trackingId"><label for="tracking_id">Tracking ID</label></input></div>
                             </div>
                         </form>
 
@@ -153,64 +143,61 @@ if (isset($_GET["delete_id"]) && !empty($_GET["delete_id"])) {
                             </ul>
                         </div>
 
-                        <table class="table table-striped responsive-table centered">
-                            <thead>
-                                <tr>
-                                    <th class="center">
-                                        Image Proof of Delivery
-                                    </th>
-                                    <th>
-                                        Product Name
-                                    </th>
-                                    <th>
-                                        Order ID
-                                    </th>
-                                    <th>
-                                        Tracking ID
-                                    </th>
-                                    <th>
-                                        Action
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                if (!isset($_GET["search"])) {
-                                    $result = getAllDelivery();
+                        <div class="card">
+                            <div class="card-content">
+                                <span class="card-title center">Not Delivered</span>
+                                <table class="table table-striped responsive-table centered">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                Product Name
+                                            </th>
+                                            <th>
+                                                Order ID
+                                            </th>
+                                            <th>
+                                                Action
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php
+                                        if (!isset($_GET["search"])) {
+                                            $result = getAllDelivery();
 
-                                    while ($row = mysqli_fetch_assoc($result)) {
-                                        echo "<tr>";
-                                        if (empty($row["image_proof_path"])) {
-                                            echo "<td><a href='/dashboard/upload.php?parcel_id=" . $row["parcel_id"] . "' class='action-link'>Upload Image</a></td>";
+                                            while ($row = mysqli_fetch_assoc($result)) {
+                                                echo "<tr>";
+                                                echo "<td>" . $row["product_name"] . "</td>";
+                                                echo "<td>" . $row["order_id"] . "</td>";
+                                                echo "<td><a href='/dashboard/index.php?delete_id=" . $row["parcel_id"] . "' class='action-link'>Delete</a></td>";
+                                                echo "<tr/>";
+                                            }
                                         } else {
-                                            echo "<td style='width: 200px;' class='center'><img width='150' src='" . $row["image_proof_path"] . "' alt='" . $row["product_name"] . "'></img></td>";
-                                        }
-                                        echo "<td>" . $row["product_name"] . "</td>";
-                                        echo "<td>" . $row["order_id"] . "</td>";
-                                        echo "<td>" . $row["tracking_id"] . "</td>";
-                                        echo "<td><a href='/dashboard/index.php?delete_id=" . $row["parcel_id"] . "' class='action-link'>Delete</a></td>";
-                                        echo "<tr/>";
-                                    }
-                                } else {
-                                    $result = deliveryFindByTrackingId($_GET["search"]);
+                                            $result = deliveryFindByTrackingId($_GET["search"]);
 
-                                    while ($row = $result->fetch_assoc()) {
-                                        echo "<tr>";
-                                        if (empty($row["image_proof_path"])) {
-                                            echo "<td><a href='/dashboard/upload.php?parcel_id=" . $row["parcel_id"] . "' class='action-link'>Upload Image</a></td>";
-                                        } else {
-                                            echo "<td style='width: 200px;' class='center'><img width='150' src='" . $row["image_proof_path"] . "' alt='" . $row["product_name"] . "'></img></td>";
+                                            while ($row = $result->fetch_assoc()) {
+                                                echo "<tr>";
+                                                echo "<td>" . $row["product_name"] . "</td>";
+                                                echo "<td>" . $row["order_id"] . "</td>";
+                                                echo "<td>" . $row["tracking_id"] . "</td>";
+                                                echo "<td><a href='/dashboard/index.php?delete_id=" . $row["parcel_id"] . "' class='action-link'>Delete</a></td>";
+                                                echo "<tr/>";
+                                            }
                                         }
-                                        echo "<td>" . $row["product_name"] . "</td>";
-                                        echo "<td>" . $row["order_id"] . "</td>";
-                                        echo "<td>" . $row["tracking_id"] . "</td>";
-                                        echo "<td><a href='/dashboard/index.php?delete_id=" . $row["parcel_id"] . "' class='action-link'>Delete</a></td>";
-                                        echo "<tr/>";
-                                    }
-                                }
-                                ?>
-                            </tbody>
-                        </table>
+                                        ?>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+                        <div class="card">
+                            <div class="card-content">
+                                <span class="card-title center">
+                                    Delivered
+                                </span>
+                                
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="card-actions">
