@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS test;
+
 CREATE DATABASE IF NOT EXISTS test;
 
 use test;
@@ -15,9 +16,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS parcel (
     parcel_id INT AUTO_INCREMENT NOT NULL,
     product_name VARCHAR(255),
-    tracking_id VARCHAR(255),
     order_id VARCHAR(255),
-    image_proof_path VARCHAR(255),
     PRIMARY KEY (parcel_id)
 );
 
@@ -39,14 +38,9 @@ VALUES
     );
 
 INSERT INTO
-    parcel (
-        product_name,
-        tracking_id,
-        order_id
-    )
+    parcel (product_name, order_id)
 VALUES
     (
         "Ghana Chocolate Heart",
-        "TRID090516CUTE",
         "ORID051608ELLE"
     );
