@@ -1,19 +1,32 @@
 <?php
-function getAllDelivery()
+function getNotDelivered()
 {
     $con = getConnection();
-    $sql = "SELECT * FROM parcel";
+    $sql = "SELECT * FROM parcel WHERE parcel_status = 'Not Delivered'";
     $result = mysqli_query($con, $sql);
 
     $con->close();
     return $result;
 }
 
-function deliveryFindByOrderID($orderId)
+function getDelivered() {
+    $con = getConnection();
+    $sql = "SELECT * FROM parcel WHERE parcel_status = 'Delivered'";
+    $result = mysqli_query($con, $sql);
+
+    $con->close();
+    return $result;
+}
+
+function deliveryFindByOrderID($orderId, $is_delivered=false)
 {
     $orderId = "%" . $orderId . "%";
     $con = getConnection();
-    $sql = "SELECT * FROM parcel WHERE order_id LIKE ?";
+    if ($is_delivered == false) {
+        $sql = "SELECT * FROM parcel WHERE order_id LIKE ? AND parcel_status = 'Not Delivered'";
+    } else {
+        $sql = "SELECT * FROM parcel WHERE order_id LIKE ? AND parcel_status = 'Delivered'";
+    }
     $stmt = $con->prepare($sql);
     $stmt->bind_param("s", $orderId);
     $stmt->execute();
@@ -24,20 +37,6 @@ function deliveryFindByOrderID($orderId)
     return $result;
 }
 
-function deliveryFindByTrackingId($trackingId)
-{
-    $orderId = "%" . $trackingId . "%";
-    $con = getConnection();
-    $sql = "SELECT * FROM parcel WHERE tracking_id LIKE ?";
-    $stmt = $con->prepare($sql);
-    $stmt->bind_param("s", $orderId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    $con->close();
-
-    return $result;
-}
 function getDeliveryProductNameByParcelId($parcelId)
 {
     $con = getConnection();
@@ -72,23 +71,6 @@ function findByParcelIdExists($parcel_id) {
 
     echo "FALSE";
     echo "<alert>alert(1)</script>";
-    $con->close();
-    return false;
-}
-
-// * CHECK TRACKING ID
-function findByTrackingIdExists($tracking_id) {
-    $con = getConnection();
-    $sql = "SELECT * FROM parcel WHERE tracking_id = ? LIMIT 1";
-    $stmt = $con->prepare($sql);
-    $stmt->bind_param("s", $tracking_id);
-    $stmt->execute();
-
-    if ($stmt->num_rows() > 0) {
-        $con->close();
-        return true;
-    }
-
     $con->close();
     return false;
 }

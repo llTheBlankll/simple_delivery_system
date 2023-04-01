@@ -23,13 +23,9 @@ if (isset($_GET["search"])) {
 }
 
 // * ADD
-if (isset($_POST["product_name"]) && isset($_POST["order_id"]) && isset($_POST["tracking_id"])) {
+if (isset($_POST["product_name"]) && isset($_POST["order_id"])) {
     $order_id = $_POST["order_id"];
     $product_name = $_POST["product_name"];
-
-    if (findByTrackingIdExists($tracking_id) != false) {
-        die(header("Location: /dashboard/index.php?error=Parcel already exists"));
-    }
 
     if (empty($order_id)) {
         die(header("Location: /dashboard/index.php?error=Order ID cannot be empty."));
@@ -112,7 +108,7 @@ if (isset($_GET["delete_id"]) && !empty($_GET["delete_id"])) {
                         <div class="input-field col s12 m8 offset-m2 l5">
                             <i class="material-icons prefix">search</i>
                             <input type="text" name="search" id="parcel_search_input" class="validate">
-                            <label for="parcel_search_input">Search by Parcel Tracking ID</label>
+                            <label for="parcel_search_input">Search by Parcel Order ID</label>
                         </div>
                     </form>
                     <div class="input-field col s12 offset-m3 offset-s2 l7">
@@ -127,10 +123,9 @@ if (isset($_GET["delete_id"]) && !empty($_GET["delete_id"])) {
                         <span class="card-title">Parcel Delivery</span>
                         <form action="" id="add_delivery_form" method="post">
                             <div class="row">
-                                <div class="col s12 l4 m6 input-field"><input type="text" name="product_name" id="txt_productName"><label for="product_name">Product Name</label></input>
+                                <div class="col s12 l6 m6 input-field"><input type="text" name="product_name" id="txt_productName"><label for="product_name">Product Name</label></input>
                                 </div>
-                                <div class="col s12 l4 m6 input-field"><input type="text" name="order_id" id="txt_orderId"><label for="order_id">Order ID</label></input></div>
-                                <div class="col s12 l4 m12 input-field"><input type="text" name="tracking_id" id="txt_trackingId"><label for="tracking_id">Tracking ID</label></input></div>
+                                <div class="col s12 l6 m6 input-field"><input type="text" name="order_id" id="txt_orderId"><label for="order_id">Order ID</label></input></div>
                             </div>
                         </form>
 
@@ -146,14 +141,14 @@ if (isset($_GET["delete_id"]) && !empty($_GET["delete_id"])) {
                         <div class="card">
                             <div class="card-content">
                                 <span class="card-title center">Not Delivered</span>
+                                <!-- * NOT DELIVERED * -->
                                 <table class="table table-striped responsive-table centered">
                                     <thead>
                                         <tr>
                                             <th>
                                                 Product Name
                                             </th>
-                                            <th>
-                                                Order ID
+                                            <th> Order ID
                                             </th>
                                             <th>
                                                 Action
@@ -163,7 +158,7 @@ if (isset($_GET["delete_id"]) && !empty($_GET["delete_id"])) {
                                     <tbody>
                                         <?php
                                         if (!isset($_GET["search"])) {
-                                            $result = getAllDelivery();
+                                            $result = getNotDelivered();
 
                                             while ($row = mysqli_fetch_assoc($result)) {
                                                 echo "<tr>";
@@ -173,13 +168,19 @@ if (isset($_GET["delete_id"]) && !empty($_GET["delete_id"])) {
                                                 echo "<tr/>";
                                             }
                                         } else {
-                                            $result = deliveryFindByTrackingId($_GET["search"]);
+                                            $result = deliveryFindByOrderID($_GET["search"], false);
+                                            $search_query = htmlspecialchars($_GET["search"]);
+
+                                            if ($result->num_rows <= 0) {
+                                                echo "<tr>";
+                                                echo "<td colspan='3'><b>The Parcel you searched is not in Delivery</b></td>";
+                                                echo "</tr>";
+                                            }
 
                                             while ($row = $result->fetch_assoc()) {
                                                 echo "<tr>";
                                                 echo "<td>" . $row["product_name"] . "</td>";
                                                 echo "<td>" . $row["order_id"] . "</td>";
-                                                echo "<td>" . $row["tracking_id"] . "</td>";
                                                 echo "<td><a href='/dashboard/index.php?delete_id=" . $row["parcel_id"] . "' class='action-link'>Delete</a></td>";
                                                 echo "<tr/>";
                                             }
@@ -188,14 +189,59 @@ if (isset($_GET["delete_id"]) && !empty($_GET["delete_id"])) {
                                     </tbody>
                                 </table>
                             </div>
-
                         </div>
                         <div class="card">
                             <div class="card-content">
                                 <span class="card-title center">
                                     Delivered
                                 </span>
-                                
+                                <!-- * DELIVERED * -->
+                                <table class="table table-striped responsive-table centered">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                Product Name
+                                            </th>
+                                            <th> Order ID
+                                            </th>
+                                            <th>
+                                                Action
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php
+                                        if (!isset($_GET["search"])) {
+                                            $result = getDelivered();
+
+                                            while ($row = mysqli_fetch_assoc($result)) {
+                                                echo "<tr>";
+                                                echo "<td>" . $row["product_name"] . "</td>";
+                                                echo "<td>" . $row["order_id"] . "</td>";
+                                                echo "<td><a href='/dashboard/index.php?delete_id=" . $row["parcel_id"] . "' class='action-link'>Delete</a></td>";
+                                                echo "<tr/>";
+                                            }
+                                        } else {
+                                            $result = deliveryFindByOrderID($_GET["search"], true);
+                                            $search_query = htmlspecialchars($_GET["search"]);
+
+                                            if ($result->num_rows <= 0) {
+                                                echo "<tr>";
+                                                echo "<td colspan='3'><b>The Parcel you searched is not in Delivery</b.</td>";
+                                                echo "<tr/>";
+                                            }
+
+                                            while ($row = $result->fetch_assoc()) {
+                                                echo "<tr>";
+                                                echo "<td>" . $row["product_name"] . "</td>";
+                                                echo "<td>" . $row["order_id"] . "</td>";
+                                                echo "<td><a href='/dashboard/index.php?delete_id=" . $row["parcel_id"] . "' class='action-link'>Delete</a></td>";
+                                                echo "<tr/>";
+                                            }
+                                        }
+                                        ?>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
