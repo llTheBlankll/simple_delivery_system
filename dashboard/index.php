@@ -22,6 +22,49 @@ if (isset($_GET["search"])) {
     }
 }
 
+// * Change Status
+if (isset($_GET["change_status"])) {
+    $id = htmlspecialchars($_GET["change_status"]);
+    $sql = "SELECT * FROM parcel WHERE parcel_id = ?";
+
+    $con = getConnection();
+    $ps = $con->prepare($sql);
+    $ps->bind_param("i", $id);
+    if (!$ps->execute()) {
+        die(mysqli_error($con));
+        return;
+    }
+
+    $result = $ps->get_result();
+    if($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            if ($row["parcel_status"] == "Not Delivered") {
+                $sql_notDelivered = "UPDATE parcel SET parcel_status = ? WHERE parcel_id = ?";
+                $ps->prepare($sql_notDelivered);
+                $ps->bind_param("si", "Delivered", $id);
+                if ($ps->execute()) {
+                    header("Location: /dashboard/index.php?success=" . $row["product_name"] . " Delivery Status has changed.");
+                    return;
+                }
+
+                header("Location: /dashboard/index.php?error=Parcel Status was not update due to an uncaught error.");
+            } else {
+                $sql_Delivered = "UPDATE parcel SET parcel_status = ? WHERE parcel_id = ?";
+                $ps->prepare($sql_Delivered);
+                $ps->bind_param("si", "Not Delivered", $id);
+                if ($ps->execute()) {
+                    header("Location: /dashboard/index.php?success=" . $row["product_name"] . " Delivery Status has changed.");
+                    return;
+                }
+
+                header("Location: /dashboard/index.php?error=Parcel Status was not update due to an uncaught error.");
+            }
+        }
+    } else {
+        header("Location: /dashboard/index.php?error=Parcel not found.");
+    }
+}
+
 // * ADD
 if (isset($_POST["product_name"]) && isset($_POST["order_id"])) {
     $order_id = $_POST["order_id"];
@@ -34,9 +77,9 @@ if (isset($_POST["product_name"]) && isset($_POST["order_id"])) {
     }
 
     $con = getConnection();
-    $sql = "INSERT INTO parcel (product_name, order_id) VALUES (?, ?)";
+    $sql = "INSERT INTO parcel (product_name, order_id, parcel_status) VALUES (?, ?, ?)";
     $stmt = $con->prepare($sql);
-    $stmt->bind_param("ss", $product_name, $order_id);
+    $stmt->bind_param("ss", $product_name, $order_id, "Not Delivered");
 
     if ($stmt->execute()) {
         header("Location: /dashboard/index.php?success=Product Name " . $product_name . " successfully added for delivery.");
@@ -165,7 +208,7 @@ if (isset($_GET["delete_id"]) && !empty($_GET["delete_id"])) {
                                                 echo "<tr>";
                                                 echo "<td>" . $row["product_name"] . "</td>";
                                                 echo "<td>" . $row["order_id"] . "</td>";
-                                                echo "<td><a href='/dashboard/index.php?delete_id=" . $row["parcel_id"] . "' class='action-link'>Delete</a></td>";
+                                                echo "<td><a href='/dashboard/index.php?delete_id=" . $row["parcel_id"] . "' class='action-link'>Delete</a>|<a href='/dashboard/index.php?change_status=" . $row["parcel_id"] . "'>Change Status</a></td>";
                                                 echo "<tr/>";
                                             }
                                         } else {
@@ -182,7 +225,7 @@ if (isset($_GET["delete_id"]) && !empty($_GET["delete_id"])) {
                                                 echo "<tr>";
                                                 echo "<td>" . $row["product_name"] . "</td>";
                                                 echo "<td>" . $row["order_id"] . "</td>";
-                                                echo "<td><a href='/dashboard/index.php?delete_id=" . $row["parcel_id"] . "' class='action-link'>Delete</a></td>";
+                                                echo "<td><a href='/dashboard/index.php?delete_id=" . $row["parcel_id"] . "' class='action-link'>Delete</a>|<a href='/dashboard/index.php?change_status=" . $row["parcel_id"] . "'>Change Status</a></td>";
                                                 echo "<tr/>";
                                             }
                                         }
@@ -219,7 +262,7 @@ if (isset($_GET["delete_id"]) && !empty($_GET["delete_id"])) {
                                                 echo "<tr>";
                                                 echo "<td>" . $row["product_name"] . "</td>";
                                                 echo "<td>" . $row["order_id"] . "</td>";
-                                                echo "<td><a href='/dashboard/index.php?delete_id=" . $row["parcel_id"] . "' class='action-link'>Delete</a></td>";
+                                                echo "<td><a href='/dashboard/index.php?delete_id=" . $row["parcel_id"] . "' class='action-link'>Delete</a>|<a href='/dashboard/index.php?change_status=" . $row["parcel_id"] . "'>Change Status</a></td>";
                                                 echo "<tr/>";
                                             }
                                         } else {
@@ -236,7 +279,7 @@ if (isset($_GET["delete_id"]) && !empty($_GET["delete_id"])) {
                                                 echo "<tr>";
                                                 echo "<td>" . $row["product_name"] . "</td>";
                                                 echo "<td>" . $row["order_id"] . "</td>";
-                                                echo "<td><a href='/dashboard/index.php?delete_id=" . $row["parcel_id"] . "' class='action-link'>Delete</a></td>";
+                                                echo "<td><a href='/dashboard/index.php?delete_id=" . $row["parcel_id"] . "' class='action-link'>Delete</a>|<a href='/dashboard/index.php?change_status=" . $row["parcel_id"] . "'>Change Status</a></td>";
                                                 echo "<tr/>";
                                             }
                                         }
