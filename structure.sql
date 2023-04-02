@@ -15,8 +15,9 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS parcel (
     parcel_id INT AUTO_INCREMENT NOT NULL,
-    product_name VARCHAR(255),
-    order_id VARCHAR(255),
+    product_name VARCHAR(255) NOT NULL,
+    order_id VARCHAR(255) NOT NULL,
+    parcel_status VARCHAR(48) NOT NULL DEFAULT "Not Delivered",
     PRIMARY KEY (parcel_id)
 );
 
@@ -38,9 +39,10 @@ VALUES
     );
 
 INSERT INTO
-    parcel (product_name, order_id)
+    parcel (product_name, order_id, parcel_status)
 VALUES
     (
         "Ghana Chocolate Heart",
-        "ORID051608ELLE"
+        "ORID051608ELLE",
+        "Not Delivered"
     );
