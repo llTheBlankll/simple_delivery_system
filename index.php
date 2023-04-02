@@ -115,7 +115,12 @@ if (isset($_POST["username"])) {
 					<div class="text-center p-t-10">
 						<div class="alert alert-danger">
 							' . htmlspecialchars($_GET["error"]) . '</div></div>';
-					} ?>
+					} else if (isset($_GET["success"])) {
+						echo '<div class="text-center p-t-10">
+						<div class="alert alert-success">
+							' . htmlspecialchars($_GET["success"]) . '</div></div>';
+					}
+					?>
 				</form>
 			</div>
 		</div>
