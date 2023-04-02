@@ -36,7 +36,7 @@ if (isset($_POST["product_name"]) && isset($_POST["order_id"])) {
     $con = getConnection();
     $sql = "INSERT INTO parcel (product_name, order_id) VALUES (?, ?)";
     $stmt = $con->prepare($sql);
-    $stmt->bind_param("sss", $product_name, $order_id);
+    $stmt->bind_param("ss", $product_name, $order_id);
 
     if ($stmt->execute()) {
         header("Location: /dashboard/index.php?success=Product Name " . $product_name . " successfully added for delivery.");
