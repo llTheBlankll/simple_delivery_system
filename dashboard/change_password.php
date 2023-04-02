@@ -1,9 +1,53 @@
 <?php
+session_start();
 include_once("./../config/connection.php");
 
-if (isset($_POST[""])) {
-
+// Check if the user is logged in.
+if (session_status() === PHP_SESSION_ACTIVE) {
+    if (empty($_SESSION["user_id"]) && empty($_SESSION["username"])) {
+        header("Location: /dashboard/logout.php");
+    }
+} else {
+    header("Location: /dashboard/logout.php");
 }
+
+if (isset($_POST["current_password"]) && isset($_POST["new_password"]) && isset($_POST["retype_password"])) {
+
+    $con = getConnection();
+    $update_password = "UPDATE users SET password = ? WHERE BINARY user_id = ?";
+    $check_password = "SELECT * FROM users WHERE BINARY user_id = ?";
+    
+    # * INPUTS
+    $current_password = $_POST["current_password"];
+    $new_password = $_POST["new_password"];
+    $retype_password = $_POST["retype_password"];
+
+    if ($new_password != $retype_password) {
+        header("Location: /dashboard/change_password.php?error=Password is not the same.");
+        return;
+    }
+
+    $prepared_statement = $con->prepare($check_password);
+    $prepared_statement->bind_param("s", $_SESSION["user_id"]);
+    $prepared_statement->execute();
+    $result = $prepared_statement->get_result()->fetch_assoc();
+
+    if (password_verify($current_password, $result["password"])) {
+        if ($current_password == $new_password) {
+            header("Location: /dashboard/change_password.php?error=Your new password cannot be the same as the current password");
+            return;
+        }
+
+        $prepared_statement->prepare($update_password);
+        $prepared_statement->bind_param("ss", password_hash($new_password, PASSWORD_BCRYPT), $_SESSION["user_id"]);
+        if ($prepared_statement->execute()) {
+            session_destroy();
+            header("Location: /index.php?success=Password was changed successfully.");
+        }
+    } else {
+        header("Location: /dashboard/change_password.php?error=Password is incorrect.");
+    }
+} else {
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -27,9 +71,17 @@ if (isset($_POST[""])) {
 </head>
 
 <body class="dashboard-background-image">
-    <div class="alert success">
-        
-    </div>
+    <?php
+    if (isset($_GET["error"])) {
+        echo "<div class='alert error'>";
+        echo htmlspecialchars($_GET["error"]);
+        echo "</div>";
+    } else if (isset($_GET["success"])) {
+        echo "<div class='alert success'>";
+        echo htmlspecialchars($_GET["success"]);
+        echo "</div>";
+    }
+    ?>
     <div class="fixed-action-btn">
         <a class="btn-floating btn-large red">
             <i class="large material-icons">mode_edit</i>
@@ -78,5 +130,5 @@ if (isset($_POST[""])) {
         </div>
     </div>
 </body>
-
+<?php } ?>
 </html>
