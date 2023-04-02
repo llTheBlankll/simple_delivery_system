@@ -39,9 +39,9 @@ if (isset($_GET["change_status"])) {
     if($result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
             if ($row["parcel_status"] == "Not Delivered") {
-                $sql_notDelivered = "UPDATE parcel SET parcel_status = ? WHERE parcel_id = ?";
+                $sql_notDelivered = "UPDATE parcel SET parcel_status = 'Delivered' WHERE parcel_id = ?";
                 $ps->prepare($sql_notDelivered);
-                $ps->bind_param("si", "Delivered", $id);
+                $ps->bind_param("i", $id);
                 if ($ps->execute()) {
                     header("Location: /dashboard/index.php?success=" . $row["product_name"] . " Delivery Status has changed.");
                     return;
@@ -49,9 +49,9 @@ if (isset($_GET["change_status"])) {
 
                 header("Location: /dashboard/index.php?error=Parcel Status was not update due to an uncaught error.");
             } else {
-                $sql_Delivered = "UPDATE parcel SET parcel_status = ? WHERE parcel_id = ?";
+                $sql_Delivered = "UPDATE parcel SET parcel_status = 'Not Delivered' WHERE parcel_id = ?";
                 $ps->prepare($sql_Delivered);
-                $ps->bind_param("si", "Not Delivered", $id);
+                $ps->bind_param("i", $id);
                 if ($ps->execute()) {
                     header("Location: /dashboard/index.php?success=" . $row["product_name"] . " Delivery Status has changed.");
                     return;
