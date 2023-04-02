@@ -134,6 +134,7 @@ if (isset($_GET["delete_id"]) && !empty($_GET["delete_id"])) {
                                 <i class="large material-icons">mode_edit</i>
                             </a>
                             <ul>
+                                <li><a href="/dashboard/change_password.php" class="btn-floating red"><i class="material-icons">settings</i></a></li>
                                 <li><a class="btn-floating red" href="/dashboard/logout.php"><i class="material-icons">logout</i></a></li>
                             </ul>
                         </div>
