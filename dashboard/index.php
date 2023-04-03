@@ -69,7 +69,6 @@ if (isset($_GET["change_status"])) {
 if (isset($_POST["product_name"]) && isset($_POST["order_id"])) {
     $order_id = $_POST["order_id"];
     $product_name = $_POST["product_name"];
-    $delivered_status = "Not Delivered";
 
     if (empty($order_id)) {
         die(header("Location: /dashboard/index.php?error=Order ID cannot be empty."));
@@ -78,9 +77,9 @@ if (isset($_POST["product_name"]) && isset($_POST["order_id"])) {
     }
 
     $con = getConnection();
-    $sql = "INSERT INTO parcel (product_name, order_id, parcel_status) VALUES (?, ?, ?)";
+    $sql = "INSERT INTO parcel (product_name, order_id, parcel_status) VALUES (?, ?, 'Not Delivered')";
     $stmt = $con->prepare($sql);
-    $stmt->bind_param("sss", $product_name, $order_id, $delivered_status);
+    $stmt->bind_param("sss", $product_name, $order_id);
 
     if ($stmt->execute()) {
         header("Location: /dashboard/index.php?success=Product Name " . $product_name . " successfully added for delivery.");
